@@ -39,7 +39,7 @@ nakadi:
   authz.warnAllDataAccessMessage: "Data access warning"
   topic:
     min:
-      retentionMs: 86400000 # 1 days
+      retentionMs: 10800000 # 3 hours
     max:
       partitionNum: 8
       retentionMs: 345600000 # 4 days
@@ -47,7 +47,7 @@ nakadi:
       partitionNum: 1
       replicaFactor: 1
       retentionMs: 172800000 # 2 days
-      rotationMs: 86400000 # 1 day
+      rotationMs: 10800000 # 3 hours
     compacted:
       rotationMs: 10800000 # 3 hours
       segmentBytes: 1073741824 # 1 GB
@@ -65,13 +65,16 @@ nakadi:
     send.timeoutMs: 5000
     batch.size: 5242880
     max.request.size: 2098152
+    buffer.memory: 83886080 # May be defined as X * Y  * Z, where:
+                            # X - avg incoming traffic per instance per second (here: 4Mb/s)
+                            # Y - spike koeff, to get traffic for loaded instance out of average traffic (here: 2)
+                            # Z - seconds to tolerate networking issues (here: 10)
     linger.ms: 0
     enable.auto.commit: false
     delivery.timeout.ms: 30000 # request.timeout.ms + linger.ms
     max.block.ms: 5000 # kafka default 60000
   zookeeper:
-    kafkaNamespace:
-    brokers: zookeeper:2181
+    connectionString: zookeeper://zookeeper:2181
     sessionTimeoutMs: 10000
     connectionTimeoutMs: 3000
   oauth2:
@@ -102,6 +105,12 @@ nakadi:
     timelineCleanup:
       runPeriodMs: 3600000 # 1 hour
       deletionDelayMs: 2000 # 2 seconds, to be on the safe side
+    diskUsageStats:
+      runPeriodMs: 3600000 # 1 hour
+      authDataType: "*"
+      authValue: "*"
+      owningApplication: "stups_nakadi"
+      eventTypeName: "nakadi.disk.usage"
     consumerNodesCleanup.runPeriodMs: 21600000 # 6 hours
   http.pool.connection:
     max.total: 20
@@ -177,3 +186,5 @@ nakadi.features.defaultFeatures:
   REMOTE_TOKENINFO: true
   KPI_COLLECTION: true
   DISABLE_DB_WRITE_OPERATIONS: false
+  FORCE_EVENT_TYPE_AUTHZ: false
+  FORCE_SUBSCRIPTION_AUTHZ: false
